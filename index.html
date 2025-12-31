@@ -119,8 +119,7 @@
                             <th style="width:100px" class="cell-center">كود الصنف</th>
                             <th class="cell-right">وصف الصنف</th>
                             <th style="width:80px" class="cell-center">الوحدة</th>
-                            <th style="width:100px" class="cell-center">الكمية</th>
-                            <th style="width:100px" class="cell-right">سعر الوحدة</th>
+                            <th style="width:100px" class="cell-right">الكمية</th> <th style="width:100px" class="cell-right">سعر الوحدة</th>
                             <th style="width:120px" class="cell-right">الاجمالي قبل الضريبة</th>
                             <th style="width:80px" class="cell-center">نسبة الضريبة</th>
                             <th style="width:100px" class="cell-right">قيمة الضريبة</th>
@@ -249,8 +248,7 @@
                 <td class="cell-center fw-bold">${i.c}</td>
                 <td class="cell-right">${i.d}</td>
                 <td class="cell-center">${i.u}</td>
-                <td class="cell-center num-font">${fmt(i.q)}</td>
-                <td class="cell-right num-font">${fmt(i.p)}</td>
+                <td class="cell-right num-font">${fmt(i.q)}</td> <td class="cell-right num-font">${fmt(i.p)}</td>
                 <td class="cell-right num-font fw-bold">${fmt(i.t)}</td>
                 <td class="cell-center num-font text-muted">${displayRate}</td>
                 <td class="cell-right num-font">${fmt(itemVat)}</td>
@@ -326,7 +324,7 @@
             'الإجمالي قبل الخصم': v.totalItems, 'قيمة الخصم': v.disc,
             'الإجمالي قبل الضريبة': v.target, 'قيمة الضريبة': v.vat,
             'الإجمالي شامل الضريبة': v.incl, 
-            'حالة الفاتورة': v.done // تعديل هنا لترسل true/false مباشرة
+            'حالة الفاتورة': v.done
         }));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
