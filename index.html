@@ -25,7 +25,7 @@
         .erp-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         
         .fixed-table { table-layout: fixed; width: 100%; margin: 0; }
-        .col-id { width: 50px; } .col-date { width: 115px; } .col-ref { width: 125px; } .col-money { width: 140px; } .col-actions { width: 90px; }
+        .col-id { width: 50px; } .col-date { width: 115px; } .col-ref { width: 125px; } .col-money { width: 130px; } .col-actions { width: 130px; }
 
         .table-header-card { background-color: var(--header-bg) !important; border-bottom: 2px solid #aebac1; border-radius: 8px 8px 0 0; overflow: hidden; }
         .table-header-card th { padding: 12px 10px !important; font-weight: 700; color: #1e293b !important; text-align: inherit; border: none; }
@@ -41,14 +41,19 @@
         .cell-right { text-align: right !important; } .cell-center { text-align: center !important; }
         .num-font { font-family: 'Segoe UI', Tahoma, sans-serif; unicode-bidi: plaintext; font-weight: 600; }
 
-        .action-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; background: white; }
-        .btn-view { color: var(--primary); } .btn-undo { color: #ef4444; } .btn-done { color: #10b981; }
+        .action-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; background: white; transition: all 0.2s; }
+        .action-btn:hover { transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-view { color: var(--primary); } .btn-undo { color: #ef4444; } .btn-done { color: #10b981; } .btn-excel { color: #157347; border-color: #157347; }
 
         .summary-table { width: auto; margin-right: 0; border-collapse: collapse; }
         .summary-table td { padding: 4px 0; }
         .val-col { min-width: 140px; text-align: right; font-weight: 700; font-size: 1.05rem; padding-left: 15px !important; }
         .lbl-col { white-space: nowrap; color: #64748b; font-weight: 600; text-align: right; }
         .total-row td { border-top: 2px solid var(--primary); padding-top: 10px !important; color: var(--primary) !important; font-size: 1.4rem !important; }
+
+        .details-table { border-collapse: collapse; width: 100%; }
+        .details-table th, .details-table td { border: 1px solid #d1d5db; padding: 6px 10px; }
+        .details-table th { background-color: #f8fafc; font-weight: 700; }
     </style>
 </head>
 <body class="compact">
@@ -64,7 +69,8 @@
             <div class="d-flex gap-2">
                 <button onclick="toggleCompact()" class="btn btn-sm btn-outline-secondary fw-bold">عادي / مضغوط</button>
                 <button onclick="clearMemory()" class="btn btn-sm btn-outline-danger">مسح السجل</button>
-                <button onclick="exportToExcel()" id="exportBtn" class="btn btn-sm btn-success d-none">تصدير التقرير</button>
+                <button onclick="exportAllInvoicesWithDetails()" id="exportAllBtn" class="btn btn-sm btn-dark d-none">تصدير كافة التفاصيل (Excel)</button>
+                <button onclick="exportToExcel()" id="exportBtn" class="btn btn-sm btn-success d-none">تصدير التقرير الملخص</button>
             </div>
         </div>
 
@@ -95,26 +101,33 @@
 </div>
 
 <div class="modal fade" id="invoiceModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 95%;">
         <div class="modal-content border-0">
             <div class="modal-header p-3 border-bottom d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold m-0 text-primary">تفاصيل الفاتورة رقم: <span id="m_ref_title"></span></h5>
-                <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+                <div class="d-flex gap-2">
+                    <button onclick="exportSingleInvoiceExcel(window.currentId)" class="btn btn-sm btn-success fw-bold"><i class="bi bi-file-earmark-excel"></i> تصدير الأصناف (Excel)</button>
+                    <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+                </div>
             </div>
             <div class="modal-body px-4">
                 <div id="m_status_bar"></div>
-                <table class="table table-sm table-bordered mb-4 align-middle">
-                    <thead class="table-light">
+                <table class="details-table mb-4 align-middle small">
+                    <thead>
                         <tr>
-                            <th style="width:50px" class="cell-center">#</th>
-                            <th style="width:120px" class="cell-center">كود الصنف</th>
+                            <th style="width:40px" class="cell-center">#</th>
+                            <th style="width:100px" class="cell-center">كود الصنف</th>
                             <th class="cell-right">وصف الصنف</th>
-                            <th style="width:110px" class="cell-right">السعر</th>
-                            <th style="width:110px" class="cell-right">الكمية</th>
-                            <th style="width:130px" class="cell-right">الإجمالي</th>
+                            <th style="width:80px" class="cell-center">الوحدة</th>
+                            <th style="width:100px" class="cell-center">الكمية</th>
+                            <th style="width:100px" class="cell-right">سعر الوحدة</th>
+                            <th style="width:120px" class="cell-right">الاجمالي قبل الضريبة</th>
+                            <th style="width:80px" class="cell-center">نسبة الضريبة</th>
+                            <th style="width:100px" class="cell-right">قيمة الضريبة</th>
+                            <th style="width:120px" class="cell-right">الاجمالي بعد الضريبة</th>
                         </tr>
                     </thead>
-                    <tbody id="m_items" class="small"></tbody>
+                    <tbody id="m_items"></tbody>
                 </table>
                 <div class="erp-card p-3 mx-auto" style="background: #f8fafc; max-width: 500px;">
                     <table class="summary-table">
@@ -137,15 +150,18 @@
     const fmt = (n) => n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
     function toggleCompact() { document.body.classList.toggle('compact'); }
-    function getSaved() { return JSON.parse(localStorage.getItem('sid_db_v35_final') || '{}'); }
-    function save(ref, status) { let s = getSaved(); s[ref] = status; localStorage.setItem('sid_db_v35_final', JSON.stringify(s)); }
+    function getSaved() { return JSON.parse(localStorage.getItem('sid_db_v42') || '{}'); }
+    function save(ref, status) { let s = getSaved(); s[ref] = status; localStorage.setItem('sid_db_v42', JSON.stringify(s)); }
 
     document.getElementById('upload').onchange = (e) => {
         const reader = new FileReader();
         reader.onload = (ev) => {
             const wb = XLSX.read(new Uint8Array(ev.target.result), {type: 'array'});
             items = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames.find(n => n.toLowerCase().includes('item'))]).map(i => ({
-                c: i['SN'] || i['Code'], d: i['Item Description'] || i['Description'], p: fix(i['Unit Price'] || 0)
+                c: i['SN'] || i['Code'], 
+                d: i['Item Description'] || i['Description'], 
+                u: i['Unit'] || i['unit'] || i['الوحدة'] || 'PCS',
+                p: fix(i['Unit Price'] || 0)
             })).filter(i => i.p > 0);
 
             const saved = getSaved();
@@ -164,6 +180,7 @@
             document.getElementById('headerCard').classList.remove('d-none');
             document.getElementById('resultsArea').classList.remove('d-none');
             document.getElementById('exportBtn').classList.remove('d-none');
+            document.getElementById('exportAllBtn').classList.remove('d-none');
         };
         reader.readAsArrayBuffer(e.target.files[0]);
     };
@@ -201,8 +218,9 @@
                 <td class="col-money cell-right num-font text-primary">${fmt(v.incl)}</td>
                 <td class="col-actions cell-center">
                     <div class="d-flex gap-1 justify-content-center">
-                        <span class="action-btn btn-view" onclick="show(${v.idx})"><i class="bi bi-eye"></i></span>
-                        <span class="action-btn ${v.done ? 'btn-undo' : 'btn-done'}" onclick="toggle(${v.idx})">
+                        <span class="action-btn btn-view" title="معاينة" onclick="show(${v.idx})"><i class="bi bi-eye"></i></span>
+                        <span class="action-btn btn-excel" title="تصدير Excel" onclick="exportSingleInvoiceExcel(${v.idx})"><i class="bi bi-file-earmark-excel"></i></span>
+                        <span class="action-btn ${v.done ? 'btn-undo' : 'btn-done'}" title="${v.done ? 'تراجع' : 'اعتماد'}" onclick="toggle(${v.idx})">
                             <i class="bi ${v.done ? 'bi-arrow-counterclockwise' : 'bi-check-lg'}"></i>
                         </span>
                     </div>
@@ -211,15 +229,35 @@
     }
 
     window.toggle = (id) => { invoices[id].done = !invoices[id].done; save(invoices[id].ref, invoices[id].done); render(); };
+    
     window.show = (id) => {
         let v = invoices[id]; window.currentId = id;
+        const realTaxRate = v.target > 0 ? (v.vat / v.target) : 0;
+        const displayRate = (realTaxRate * 100).toLocaleString('en-US', {maximumFractionDigits: 2}) + '%';
+
         document.getElementById('m_ref_title').innerText = v.ref;
         document.getElementById('m_status_bar').innerHTML = v.done ? 
             `<div class="status-alert status-completed"><i class="bi bi-check-circle-fill"></i> هذه الفاتورة معتمدة ومحفوظة بالسجل</div>` :
             `<div class="status-alert status-pending"><i class="bi bi-clock-history"></i> هذه الفاتورة قيد الانتظار - لم يتم اعتمادها بعد</div>`;
-        document.getElementById('m_items').innerHTML = v.items.map((i, n) => `
-            <tr><td class="cell-center">${n+1}</td><td class="cell-center fw-bold">${i.c}</td><td class="cell-right">${i.d}</td>
-            <td class="cell-right num-font">${fmt(i.p)}</td><td class="cell-right num-font">${fmt(i.q)}</td><td class="cell-right num-font">${fmt(i.t)}</td></tr>`).join('');
+        
+        document.getElementById('m_items').innerHTML = v.items.map((i, n) => {
+            let itemVat = fix(i.t * realTaxRate);
+            let itemIncl = fix(i.t + itemVat);
+            return `
+            <tr>
+                <td class="cell-center text-muted">${n+1}</td>
+                <td class="cell-center fw-bold">${i.c}</td>
+                <td class="cell-right">${i.d}</td>
+                <td class="cell-center">${i.u}</td>
+                <td class="cell-center num-font">${fmt(i.q)}</td>
+                <td class="cell-right num-font">${fmt(i.p)}</td>
+                <td class="cell-right num-font fw-bold">${fmt(i.t)}</td>
+                <td class="cell-center num-font text-muted">${displayRate}</td>
+                <td class="cell-right num-font">${fmt(itemVat)}</td>
+                <td class="cell-right num-font text-primary">${fmt(itemIncl)}</td>
+            </tr>`;
+        }).join('');
+
         document.getElementById('m_total_items').innerText = fmt(v.totalItems);
         document.getElementById('m_disc').innerText = fmt(v.disc);
         document.getElementById('m_excl').innerText = fmt(v.target);
@@ -228,6 +266,55 @@
         new bootstrap.Modal(document.getElementById('invoiceModal')).show();
     };
 
+    window.exportSingleInvoiceExcel = (id) => {
+        const v = invoices[id];
+        const realTaxRate = v.target > 0 ? (v.vat / v.target) : 0;
+        const data = v.items.map((i, n) => ({
+            'رقم المرجع': v.ref,
+            '#': n + 1,
+            'كود الصنف': i.c,
+            'وصف الصنف': i.d,
+            'الوحدة': i.u,
+            'الكمية': i.q,
+            'سعر الوحدة': i.p,
+            'الاجمالي قبل الضريبة': i.t,
+            'نسبة الضريبة': (realTaxRate * 100).toFixed(2) + '%',
+            'قيمة الضريبة': fix(i.t * realTaxRate),
+            'الاجمالي بعد الضريبة': fix(i.t + fix(i.t * realTaxRate))
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Details");
+        XLSX.writeFile(wb, `Invoice_${v.ref}_Details.xlsx`);
+    };
+
+    function exportAllInvoicesWithDetails() {
+        let allData = [];
+        invoices.forEach(v => {
+            const realTaxRate = v.target > 0 ? (v.vat / v.target) : 0;
+            v.items.forEach((i, n) => {
+                allData.push({
+                    'رقم المرجع': v.ref,
+                    'التاريخ': v.date,
+                    '#': n + 1,
+                    'كود الصنف': i.c,
+                    'وصف الصنف': i.d,
+                    'الوحدة': i.u,
+                    'الكمية': i.q,
+                    'سعر الوحدة': i.p,
+                    'الاجمالي قبل الضريبة': i.t,
+                    'نسبة الضريبة': (realTaxRate * 100).toFixed(2) + '%',
+                    'قيمة الضريبة': fix(i.t * realTaxRate),
+                    'الاجمالي بعد الضريبة': fix(i.t + fix(i.t * realTaxRate))
+                });
+            });
+        });
+        const ws = XLSX.utils.json_to_sheet(allData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "All_Invoices_Details");
+        XLSX.writeFile(wb, `Full_Invoices_Details_Report.xlsx`);
+    }
+
     document.getElementById('m_done_btn').onclick = () => {
         invoices[window.currentId].done = true; save(invoices[window.currentId].ref, true);
         render(); bootstrap.Modal.getInstance(document.getElementById('invoiceModal')).hide();
@@ -235,27 +322,23 @@
 
     function exportToExcel() {
         const data = invoices.map(v => ({
-            '#': v.idx + 1,
-            'تاريخ الفاتورة': v.date,
-            'رقم المرجع': v.ref,
-            'الإجمالي قبل الخصم': v.totalItems,
-            'قيمة الخصم': v.disc,
-            'الإجمالي قبل الضريبة': v.target,
-            'قيمة الضريبة': v.vat,
-            'الإجمالي شامل الضريبة': v.incl,
-            'حالة الفاتورة': v.done // القيمة ستصدر كـ TRUE أو FALSE منطقية
+            '#': v.idx + 1, 'تاريخ الفاتورة': v.date, 'رقم المرجع': v.ref,
+            'الإجمالي قبل الخصم': v.totalItems, 'قيمة الخصم': v.disc,
+            'الإجمالي قبل الضريبة': v.target, 'قيمة الضريبة': v.vat,
+            'الإجمالي شامل الضريبة': v.incl, 
+            'حالة الفاتورة': v.done // تعديل هنا لترسل true/false مباشرة
         }));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Report");
-        XLSX.writeFile(wb, `Smart_Invoices_Report.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "General_Report");
+        XLSX.writeFile(wb, `Summary_Report.xlsx`);
     }
 
     function fmtDate(e) {
         let d = typeof e === 'number' ? new Date(Math.round((e-25569)*86400*1000)) : new Date(e);
         return d.toLocaleDateString('en-GB');
     }
-    function clearMemory() { if(confirm("مسح السجل؟")) { localStorage.removeItem('sid_db_v35_final'); location.reload(); } }
+    function clearMemory() { if(confirm("مسح السجل؟")) { localStorage.removeItem('sid_db_v42'); location.reload(); } }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
