@@ -31,7 +31,9 @@
         .table-header-card th { padding: 12px 10px !important; font-weight: 700; color: #1e293b !important; text-align: inherit; border: none; }
 
         .table-body-card { border-radius: 0 0 8px 8px; border-top: none; }
-        .table tbody tr:hover td { background-color: var(--row-hover) !important; }
+        /* خاصية الهوفر للجدول الرئيسي وتفاصيل الفاتورة */
+        .table tbody tr:hover td, .details-table tbody tr:hover td { background-color: var(--row-hover) !important; }
+        
         tr.row-completed td { background-color: var(--done-bg) !important; color: #166534 !important; font-weight: 600; }
 
         .status-alert { padding: 8px 15px; border-radius: 6px; margin-bottom: 15px; font-weight: 600; text-align: center; }
@@ -119,7 +121,8 @@
                             <th style="width:100px" class="cell-center">كود الصنف</th>
                             <th class="cell-right">وصف الصنف</th>
                             <th style="width:80px" class="cell-center">الوحدة</th>
-                            <th style="width:100px" class="cell-right">الكمية</th> <th style="width:100px" class="cell-right">سعر الوحدة</th>
+                            <th style="width:100px" class="cell-right">الكمية</th>
+                            <th style="width:100px" class="cell-right">سعر الوحدة</th>
                             <th style="width:120px" class="cell-right">الاجمالي قبل الضريبة</th>
                             <th style="width:80px" class="cell-center">نسبة الضريبة</th>
                             <th style="width:100px" class="cell-right">قيمة الضريبة</th>
@@ -248,7 +251,8 @@
                 <td class="cell-center fw-bold">${i.c}</td>
                 <td class="cell-right">${i.d}</td>
                 <td class="cell-center">${i.u}</td>
-                <td class="cell-right num-font">${fmt(i.q)}</td> <td class="cell-right num-font">${fmt(i.p)}</td>
+                <td class="cell-right num-font">${fmt(i.q)}</td>
+                <td class="cell-right num-font">${fmt(i.p)}</td>
                 <td class="cell-right num-font fw-bold">${fmt(i.t)}</td>
                 <td class="cell-center num-font text-muted">${displayRate}</td>
                 <td class="cell-right num-font">${fmt(itemVat)}</td>
