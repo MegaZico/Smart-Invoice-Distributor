@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Invoice Distributor</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1055/1055644.png" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #2563eb; --bg-body: #f1f5f9; --card-bg: #ffffff;
+            --border-color: #e2e8f0; --row-hover: #fffde7 !important; --done-bg: #dcfce7 !important;
+            --header-bg: #d1d8e0; 
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); color: #1e293b; font-size: 0.9rem; transition: all 0.2s; }
+        body.compact { font-size: 0.78rem; }
+        body.compact .table td, body.compact .table th { padding: 6px 10px !important; }
+
+        .top-sticky-container { position: sticky; top: 0; z-index: 1020; background: var(--bg-body); padding-bottom: 5px; }
+        .erp-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .fixed-table { table-layout: fixed; width: 100%; margin: 0; }
+        .col-id { width: 50px; } .col-date { width: 115px; } .col-ref { width: 125px; } .col-money { width: 140px; } .col-actions { width: 90px; }
+
+        .table-header-card { background-color: var(--header-bg) !important; border-bottom: 2px solid #aebac1; border-radius: 8px 8px 0 0; overflow: hidden; }
+        .table-header-card th { padding: 12px 10px !important; font-weight: 700; color: #1e293b !important; text-align: inherit; border: none; }
+
+        .table-body-card { border-radius: 0 0 8px 8px; border-top: none; }
+        .table tbody tr:hover td { background-color: var(--row-hover) !important; }
+        tr.row-completed td { background-color: var(--done-bg) !important; color: #166534 !important; font-weight: 600; }
+
+        .status-alert { padding: 8px 15px; border-radius: 6px; margin-bottom: 15px; font-weight: 600; text-align: center; }
+        .status-pending { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+        .status-completed { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+        .cell-right { text-align: right !important; } .cell-center { text-align: center !important; }
+        .num-font { font-family: 'Segoe UI', Tahoma, sans-serif; unicode-bidi: plaintext; font-weight: 600; }
+
+        .action-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; background: white; }
+        .btn-view { color: var(--primary); } .btn-undo { color: #ef4444; } .btn-done { color: #10b981; }
+
+        .summary-table { width: auto; margin-right: 0; border-collapse: collapse; }
+        .summary-table td { padding: 4px 0; }
+        .val-col { min-width: 140px; text-align: right; font-weight: 700; font-size: 1.05rem; padding-left: 15px !important; }
+        .lbl-col { white-space: nowrap; color: #64748b; font-weight: 600; text-align: right; }
+        .total-row td { border-top: 2px solid var(--primary); padding-top: 10px !important; color: var(--primary) !important; font-size: 1.4rem !important; }
+    </style>
+</head>
+<body class="compact">
+
+<div class="container-fluid">
+    <div class="top-sticky-container no-print">
+        <div class="erp-card p-2 mb-2 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary text-white p-2 rounded shadow-sm"><i class="bi bi-diagram-3-fill"></i></div>
+                <h6 class="m-0 fw-bold text-primary">Smart Invoice Distributor</h6>
+                <input type="file" id="upload" class="form-control form-control-sm border-primary" style="width: 220px;">
+            </div>
+            <div class="d-flex gap-2">
+                <button onclick="toggleCompact()" class="btn btn-sm btn-outline-secondary fw-bold">عادي / مضغوط</button>
+                <button onclick="clearMemory()" class="btn btn-sm btn-outline-danger">مسح السجل</button>
+                <button onclick="exportToExcel()" id="exportBtn" class="btn btn-sm btn-success d-none">تصدير التقرير</button>
+            </div>
+        </div>
+
+        <div id="headerCard" class="erp-card table-header-card d-none">
+            <table class="table table-sm fixed-table mb-0">
+                <thead>
+                    <tr>
+                        <th class="col-id cell-center">#</th>
+                        <th class="col-date cell-center">تاريخ الفاتورة</th>
+                        <th class="col-ref cell-center">رقم المرجع</th>
+                        <th class="col-money cell-right">الإجمالي قبل الخصم</th>
+                        <th class="col-money cell-right">قيمة الخصم</th>
+                        <th class="col-money cell-right">الإجمالي قبل الضريبة</th>
+                        <th class="col-money cell-right">قيمة الضريبة</th>
+                        <th class="col-money cell-right">الإجمالي شامل الضريبة</th>
+                        <th class="col-actions cell-center">الإجراءات</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <div id="resultsArea" class="erp-card table-body-card d-none overflow-hidden mt-1">
+        <table class="table table-sm align-middle fixed-table m-0">
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="invoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0">
+            <div class="modal-header p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold m-0 text-primary">تفاصيل الفاتورة رقم: <span id="m_ref_title"></span></h5>
+                <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <div id="m_status_bar"></div>
+                <table class="table table-sm table-bordered mb-4 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:50px" class="cell-center">#</th>
+                            <th style="width:120px" class="cell-center">كود الصنف</th>
+                            <th class="cell-right">وصف الصنف</th>
+                            <th style="width:110px" class="cell-right">السعر</th>
+                            <th style="width:110px" class="cell-right">الكمية</th>
+                            <th style="width:130px" class="cell-right">الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="m_items" class="small"></tbody>
+                </table>
+                <div class="erp-card p-3 mx-auto" style="background: #f8fafc; max-width: 500px;">
+                    <table class="summary-table">
+                        <tr><td id="m_total_items" class="val-col"></td><td class="lbl-col">الإجمالي قبل الخصم</td></tr>
+                        <tr class="text-danger"><td id="m_disc" class="val-col"></td><td class="lbl-col">قيمة الخصم</td></tr>
+                        <tr><td id="m_excl" class="val-col"></td><td class="lbl-col">الإجمالي قبل الضريبة</td></tr>
+                        <tr><td id="m_vat" class="val-col"></td><td class="lbl-col">قيمة الضريبة</td></tr>
+                        <tr class="total-row"><td id="m_incl" class="val-col"></td><td class="lbl-col fw-bold">الإجمالي شامل الضريبة</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light"><button id="m_done_btn" class="btn btn-primary px-5 fw-bold">اعتماد ✅</button></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let invoices = [], items = [];
+    const fix = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+    const fmt = (n) => n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+    function toggleCompact() { document.body.classList.toggle('compact'); }
+    function getSaved() { return JSON.parse(localStorage.getItem('sid_db_v35_final') || '{}'); }
+    function save(ref, status) { let s = getSaved(); s[ref] = status; localStorage.setItem('sid_db_v35_final', JSON.stringify(s)); }
+
+    document.getElementById('upload').onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const wb = XLSX.read(new Uint8Array(ev.target.result), {type: 'array'});
+            items = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames.find(n => n.toLowerCase().includes('item'))]).map(i => ({
+                c: i['SN'] || i['Code'], d: i['Item Description'] || i['Description'], p: fix(i['Unit Price'] || 0)
+            })).filter(i => i.p > 0);
+
+            const saved = getSaved();
+            invoices = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames.find(n => n.toLowerCase().includes('invoice'))]).map((v, idx) => {
+                const target = fix(v['Total Excl VAT'] || 0);
+                if(target <= 0) return null;
+                const ref = String(v['Invoice Ref'] || idx);
+                const dist = distributeSmartFinal(target, ref);
+                return {
+                    idx, date: fmtDate(v['Invoice Date']), ref, target, vat: fix(v['VAT Amount'] || 0),
+                    incl: fix(v['Total Incl VAT'] || 0), items: dist.list, disc: dist.disc, totalItems: dist.sum,
+                    done: saved[ref] || false
+                };
+            }).filter(i => i);
+            render();
+            document.getElementById('headerCard').classList.remove('d-none');
+            document.getElementById('resultsArea').classList.remove('d-none');
+            document.getElementById('exportBtn').classList.remove('d-none');
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
+    };
+
+    function distributeSmartFinal(target, ref) {
+        let seed = 0; for (let i = 0; i < ref.length; i++) seed += ref.charCodeAt(i);
+        const getRnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+        let count = 8;
+        let pool = [...items].sort((a,b) => a.p - b.p);
+        let selected = [];
+        for(let i=0; i<count; i++) { selected.push({...pool[Math.floor(getRnd() * pool.length)], q: 0, t: 0}); }
+        let currentSum = 0;
+        selected.forEach(item => {
+            item.q = Math.floor(((target / count) * 0.85) / item.p); if(item.q === 0) item.q = 1;
+            item.t = fix(item.q * item.p); currentSum = fix(currentSum + item.t);
+        });
+        let safety = 0;
+        while (currentSum < target && safety < 1000) {
+            let i = selected[Math.floor(getRnd() * selected.length)];
+            i.q++; i.t = fix(i.q * i.p); currentSum = fix(selected.reduce((s, x) => s + x.t, 0)); safety++;
+        }
+        return { list: selected, sum: currentSum, disc: fix(currentSum - target) };
+    }
+
+    function render() {
+        document.getElementById('tableBody').innerHTML = invoices.map(v => `
+            <tr class="${v.done ? 'row-completed' : ''}">
+                <td class="col-id cell-center">${v.idx + 1}</td>
+                <td class="col-date cell-center">${v.date}</td>
+                <td class="col-ref cell-center fw-bold">${v.ref}</td>
+                <td class="col-money cell-right num-font">${fmt(v.totalItems)}</td>
+                <td class="col-money cell-right num-font text-danger">${fmt(v.disc)}</td>
+                <td class="col-money cell-right num-font fw-bold">${fmt(v.target)}</td>
+                <td class="col-money cell-right num-font">${fmt(v.vat)}</td>
+                <td class="col-money cell-right num-font text-primary">${fmt(v.incl)}</td>
+                <td class="col-actions cell-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <span class="action-btn btn-view" onclick="show(${v.idx})"><i class="bi bi-eye"></i></span>
+                        <span class="action-btn ${v.done ? 'btn-undo' : 'btn-done'}" onclick="toggle(${v.idx})">
+                            <i class="bi ${v.done ? 'bi-arrow-counterclockwise' : 'bi-check-lg'}"></i>
+                        </span>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    window.toggle = (id) => { invoices[id].done = !invoices[id].done; save(invoices[id].ref, invoices[id].done); render(); };
+    window.show = (id) => {
+        let v = invoices[id]; window.currentId = id;
+        document.getElementById('m_ref_title').innerText = v.ref;
+        document.getElementById('m_status_bar').innerHTML = v.done ? 
+            `<div class="status-alert status-completed"><i class="bi bi-check-circle-fill"></i> هذه الفاتورة معتمدة ومحفوظة بالسجل</div>` :
+            `<div class="status-alert status-pending"><i class="bi bi-clock-history"></i> هذه الفاتورة قيد الانتظار - لم يتم اعتمادها بعد</div>`;
+        document.getElementById('m_items').innerHTML = v.items.map((i, n) => `
+            <tr><td class="cell-center">${n+1}</td><td class="cell-center fw-bold">${i.c}</td><td class="cell-right">${i.d}</td>
+            <td class="cell-right num-font">${fmt(i.p)}</td><td class="cell-right num-font">${fmt(i.q)}</td><td class="cell-right num-font">${fmt(i.t)}</td></tr>`).join('');
+        document.getElementById('m_total_items').innerText = fmt(v.totalItems);
+        document.getElementById('m_disc').innerText = fmt(v.disc);
+        document.getElementById('m_excl').innerText = fmt(v.target);
+        document.getElementById('m_vat').innerText = fmt(v.vat);
+        document.getElementById('m_incl').innerText = fmt(v.incl);
+        new bootstrap.Modal(document.getElementById('invoiceModal')).show();
+    };
+
+    document.getElementById('m_done_btn').onclick = () => {
+        invoices[window.currentId].done = true; save(invoices[window.currentId].ref, true);
+        render(); bootstrap.Modal.getInstance(document.getElementById('invoiceModal')).hide();
+    };
+
+    function exportToExcel() {
+        const data = invoices.map(v => ({
+            '#': v.idx + 1,
+            'تاريخ الفاتورة': v.date,
+            'رقم المرجع': v.ref,
+            'الإجمالي قبل الخصم': v.totalItems,
+            'قيمة الخصم': v.disc,
+            'الإجمالي قبل الضريبة': v.target,
+            'قيمة الضريبة': v.vat,
+            'الإجمالي شامل الضريبة': v.incl,
+            'حالة الفاتورة': v.done // القيمة ستصدر كـ TRUE أو FALSE منطقية
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Report");
+        XLSX.writeFile(wb, `Smart_Invoices_Report.xlsx`);
+    }
+
+    function fmtDate(e) {
+        let d = typeof e === 'number' ? new Date(Math.round((e-25569)*86400*1000)) : new Date(e);
+        return d.toLocaleDateString('en-GB');
+    }
+    function clearMemory() { if(confirm("مسح السجل؟")) { localStorage.removeItem('sid_db_v35_final'); location.reload(); } }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
