@@ -31,7 +31,6 @@
         .table-header-card th { padding: 12px 10px !important; font-weight: 700; color: #1e293b !important; text-align: inherit; border: none; }
 
         .table-body-card { border-radius: 0 0 8px 8px; border-top: none; }
-        /* خاصية الهوفر للجدول الرئيسي وتفاصيل الفاتورة */
         .table tbody tr:hover td, .details-table tbody tr:hover td { background-color: var(--row-hover) !important; }
         
         tr.row-completed td { background-color: var(--done-bg) !important; color: #166534 !important; font-weight: 600; }
@@ -152,8 +151,8 @@
     const fmt = (n) => n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
     function toggleCompact() { document.body.classList.toggle('compact'); }
-    function getSaved() { return JSON.parse(localStorage.getItem('sid_db_v42') || '{}'); }
-    function save(ref, status) { let s = getSaved(); s[ref] = status; localStorage.setItem('sid_db_v42', JSON.stringify(s)); }
+    function getSaved() { return JSON.parse(localStorage.getItem('sid_db_v45') || '{}'); }
+    function save(ref, status) { let s = getSaved(); s[ref] = status; localStorage.setItem('sid_db_v45', JSON.stringify(s)); }
 
     document.getElementById('upload').onchange = (e) => {
         const reader = new FileReader();
@@ -190,19 +189,37 @@
     function distributeSmartFinal(target, ref) {
         let seed = 0; for (let i = 0; i < ref.length; i++) seed += ref.charCodeAt(i);
         const getRnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-        let count = 8;
-        let pool = [...items].sort((a,b) => a.p - b.p);
+        
+        // تعديل: تحديد عدد أصناف عشوائي بحد أقصى 10
+        let maxPossible = Math.min(10, items.length);
+        let minPossible = Math.min(4, maxPossible);
+        let count = Math.floor(getRnd() * (maxPossible - minPossible + 1)) + minPossible;
+        
+        let availablePool = [...items];
         let selected = [];
-        for(let i=0; i<count; i++) { selected.push({...pool[Math.floor(getRnd() * pool.length)], q: 0, t: 0}); }
+        
+        for(let i=0; i<count; i++) {
+            if(availablePool.length === 0) break;
+            let rndIdx = Math.floor(getRnd() * availablePool.length);
+            let item = availablePool.splice(rndIdx, 1)[0]; 
+            selected.push({...item, q: 0, t: 0});
+        }
+
         let currentSum = 0;
         selected.forEach(item => {
-            item.q = Math.floor(((target / count) * 0.85) / item.p); if(item.q === 0) item.q = 1;
-            item.t = fix(item.q * item.p); currentSum = fix(currentSum + item.t);
+            item.q = Math.floor(((target / selected.length) * 0.85) / item.p); 
+            if(item.q === 0) item.q = 1;
+            item.t = fix(item.q * item.p); 
+            currentSum = fix(currentSum + item.t);
         });
+
         let safety = 0;
         while (currentSum < target && safety < 1000) {
             let i = selected[Math.floor(getRnd() * selected.length)];
-            i.q++; i.t = fix(i.q * i.p); currentSum = fix(selected.reduce((s, x) => s + x.t, 0)); safety++;
+            i.q++; 
+            i.t = fix(i.q * i.p); 
+            currentSum = fix(selected.reduce((s, x) => s + x.t, 0)); 
+            safety++;
         }
         return { list: selected, sum: currentSum, disc: fix(currentSum - target) };
     }
@@ -340,7 +357,7 @@
         let d = typeof e === 'number' ? new Date(Math.round((e-25569)*86400*1000)) : new Date(e);
         return d.toLocaleDateString('en-GB');
     }
-    function clearMemory() { if(confirm("مسح السجل؟")) { localStorage.removeItem('sid_db_v42'); location.reload(); } }
+    function clearMemory() { if(confirm("مسح السجل؟")) { localStorage.removeItem('sid_db_v45'); location.reload(); } }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
