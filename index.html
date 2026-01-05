@@ -14,50 +14,96 @@
         :root {
             --primary: #2563eb; --bg-body: #f1f5f9; --card-bg: #ffffff;
             --border-color: #e2e8f0; --row-hover: #fffde7 !important; --done-bg: #dcfce7 !important;
-            --header-bg: #d1d8e0; 
+            --header-bg: #d1d8e0; --text-main: #1e293b; --text-muted: #64748b;
+            --header-text: #1e293b;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); color: #1e293b; font-size: 0.9rem; transition: all 0.2s; }
+        [data-theme="dark"] {
+            --bg-body: #0f172a; --card-bg: #1e293b;
+            --border-color: #334155; --row-hover: #fff9c4 !important;
+            --done-bg: #dcfce7 !important; 
+            --header-bg: #334155; --text-main: #f8fafc; --text-muted: #cbd5e1;
+            --header-text: #f8fafc;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 0.9rem; transition: background 0.2s, color 0.2s; }
         body.compact { font-size: 0.78rem; }
         body.compact .table td, body.compact .table th { padding: 6px 10px !important; }
 
         .top-sticky-container { position: sticky; top: 0; z-index: 1020; background: var(--bg-body); padding-bottom: 5px; }
         .erp-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         
-        .fixed-table { table-layout: fixed; width: 100%; margin: 0; }
+        .fixed-table { table-layout: fixed; width: 100%; margin: 0; color: inherit; border-collapse: collapse; }
         .col-id { width: 50px; } .col-date { width: 115px; } .col-ref { width: 125px; } .col-money { width: 130px; } .col-actions { width: 130px; }
 
         .table-header-card { background-color: var(--header-bg) !important; border-bottom: 2px solid #aebac1; border-radius: 8px 8px 0 0; overflow: hidden; }
-        .table-header-card th { padding: 12px 10px !important; font-weight: 700; color: #1e293b !important; text-align: inherit; border: none; }
+        .table-header-card th { 
+            padding: 12px 10px !important; 
+            font-weight: 700; 
+            color: var(--header-text) !important; 
+            text-align: inherit; 
+            border: none; 
+            background-color: var(--header-bg) !important;
+        }
 
-        .table-body-card { border-radius: 0 0 8px 8px; border-top: none; }
-        .table tbody tr:hover td, .details-table tbody tr:hover td { background-color: var(--row-hover) !important; }
+        .table-body-card { border-radius: 0 0 8px 8px; border-top: none; background-color: var(--card-bg); }
+        .table tbody tr td { background-color: var(--card-bg); color: var(--text-main); border-bottom: 1px solid var(--border-color); }
         
-        tr.row-completed td { background-color: var(--done-bg) !important; color: #166534 !important; font-weight: 600; }
+        .table tbody tr:hover td, .details-table tbody tr:hover td { 
+            background-color: var(--row-hover) !important; 
+        }
 
+        .details-table tbody tr:hover td {
+            color: #1e293b !important;
+        }
+
+        tr.row-completed td { 
+            background-color: #dcfce7 !important; 
+            color: #166534 !important;
+            font-weight: 600; 
+        }
+        
+        tr.row-completed td.num-font, tr.row-completed td .text-primary, tr.row-completed td .text-danger {
+            color: #166534 !important;
+        }
+
+        .table tbody tr:not(.row-completed):hover td {
+            color: #1e293b !important;
+        }
+        
         .status-alert { padding: 8px 15px; border-radius: 6px; margin-bottom: 15px; font-weight: 600; text-align: center; }
         .status-pending { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+        [data-theme="dark"] .status-pending { background: #422006; color: #fde047; border: 1px solid #713f12; }
         .status-completed { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
 
         .cell-right { text-align: right !important; } .cell-center { text-align: center !important; }
         .num-font { font-family: 'Segoe UI', Tahoma, sans-serif; unicode-bidi: plaintext; font-weight: 600; }
 
-        .action-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; background: white; transition: all 0.2s; }
+        [data-theme="dark"] .text-muted { color: var(--text-muted) !important; }
+        [data-theme="dark"] .text-danger { color: #f87171 !important; }
+        [data-theme="dark"] .text-primary { color: #60a5fa !important; }
+
+        .action-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; background: var(--card-bg); color: var(--text-main); transition: all 0.2s; }
         .action-btn:hover { transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn-view { color: var(--primary); } .btn-undo { color: #ef4444; } .btn-done { color: #10b981; } .btn-excel { color: #157347; border-color: #157347; }
 
-        .summary-table { width: auto; margin-right: 0; border-collapse: collapse; }
+        .summary-table { width: auto; margin-right: 0; border-collapse: collapse; color: inherit; }
         .summary-table td { padding: 4px 0; }
         .val-col { min-width: 140px; text-align: right; font-weight: 700; font-size: 1.05rem; padding-left: 15px !important; }
-        .lbl-col { white-space: nowrap; color: #64748b; font-weight: 600; text-align: right; }
+        .lbl-col { white-space: nowrap; color: var(--text-muted); font-weight: 600; text-align: right; }
         .total-row td { border-top: 2px solid var(--primary); padding-top: 10px !important; color: var(--primary) !important; font-size: 1.4rem !important; }
 
-        .details-table { border-collapse: collapse; width: 100%; }
-        .details-table th, .details-table td { border: 1px solid #d1d5db; padding: 6px 10px; }
-        .details-table th { background-color: #f8fafc; font-weight: 700; }
+        .details-table { border-collapse: collapse; width: 100%; color: inherit; }
+        .details-table th, .details-table td { border: 1px solid var(--border-color); padding: 6px 10px; }
+        .details-table th { background-color: var(--header-bg); font-weight: 700; color: var(--header-text); }
+        
+        .modal-content { background-color: var(--card-bg); color: var(--text-main); }
+        .modal-header, .modal-footer { border-color: var(--border-color); }
+        .btn-close { filter: invert(var(--close-inv, 0)); }
+        [data-theme="dark"] { --close-inv: 1; }
     </style>
 </head>
-<body class="compact">
+<body class="compact" data-theme="light">
 
 <div class="container-fluid">
     <div class="top-sticky-container no-print">
@@ -68,10 +114,21 @@
                 <input type="file" id="upload" class="form-control form-control-sm border-primary" style="width: 220px;">
             </div>
             <div class="d-flex gap-2">
-                <button onclick="toggleCompact()" class="btn btn-sm btn-outline-secondary fw-bold">عادي / مضغوط</button>
-                <button onclick="clearMemory()" class="btn btn-sm btn-outline-danger">مسح السجل</button>
-                <button onclick="exportAllInvoicesWithDetails()" id="exportAllBtn" class="btn btn-sm btn-dark d-none">تصدير كافة التفاصيل (Excel)</button>
-                <button onclick="exportToExcel()" id="exportBtn" class="btn btn-sm btn-success d-none">تصدير التقرير الملخص</button>
+                <button onclick="toggleTheme()" class="btn btn-sm btn-outline-primary fw-bold" id="themeBtn">
+                    <i class="bi bi-moon-stars-fill"></i> داكن
+                </button>
+                <button onclick="toggleCompact()" class="btn btn-sm btn-outline-secondary fw-bold" id="compactBtn">
+                    <i class="bi bi-arrows-collapse"></i> عادي
+                </button>
+                <button onclick="clearMemory()" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-memory"></i> مسح الذاكرة
+                </button>
+                <button onclick="exportAllInvoicesWithDetails()" id="exportAllBtn" class="btn btn-sm btn-dark d-none">
+                    <i class="bi bi-file-earmark-spreadsheet-fill"></i> تقرير تفصيلي
+                </button>
+                <button onclick="exportToExcel()" id="exportBtn" class="btn btn-sm btn-success d-none">
+                    <i class="bi bi-table"></i> تقرير ملخص
+                </button>
             </div>
         </div>
 
@@ -104,8 +161,13 @@
 <div class="modal fade" id="invoiceModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 95%;">
         <div class="modal-content border-0">
-            <div class="modal-header p-3 border-bottom d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold m-0 text-primary">تفاصيل الفاتورة رقم: <span id="m_ref_title"></span></h5>
+            <div class="modal-header p-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold m-0 text-primary d-flex align-items-center gap-3" style="font-size: 1.1rem;">
+                    <span class="badge bg-secondary rounded-pill fs-6">#<span id="m_idx_title"></span></span>
+                    <span class="d-flex align-items-center gap-2"><i class="bi bi-receipt"></i> رقم الفاتورة: <span id="m_ref_title" class="text-reset"></span></span>
+                    <span style="border-left: 2px solid var(--border-color); height: 20px;"></span>
+                    <span class="d-flex align-items-center gap-2"><i class="bi bi-calendar-event"></i> تاريخ الفاتورة: <span id="m_date_title" class="text-reset"></span></span>
+                </h5>
                 <div class="d-flex gap-2">
                     <button onclick="exportSingleInvoiceExcel(window.currentId)" class="btn btn-sm btn-success fw-bold"><i class="bi bi-file-earmark-excel"></i> تصدير الأصناف (Excel)</button>
                     <button type="button" class="btn-close m-0" data-bs-dismiss="modal"></button>
@@ -130,7 +192,7 @@
                     </thead>
                     <tbody id="m_items"></tbody>
                 </table>
-                <div class="erp-card p-3 mx-auto" style="background: #f8fafc; max-width: 500px;">
+                <div class="erp-card p-3 mx-auto" style="max-width: 500px;">
                     <table class="summary-table">
                         <tr><td id="m_total_items" class="val-col"></td><td class="lbl-col">الإجمالي قبل الخصم</td></tr>
                         <tr class="text-danger"><td id="m_disc" class="val-col"></td><td class="lbl-col">قيمة الخصم</td></tr>
@@ -150,7 +212,28 @@
     const fix = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
     const fmt = (n) => n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-    function toggleCompact() { document.body.classList.toggle('compact'); }
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        if (body.getAttribute('data-theme') === 'light') {
+            body.setAttribute('data-theme', 'dark');
+            btn.innerHTML = '<i class="bi bi-sun-fill"></i> فاتح';
+        } else {
+            body.setAttribute('data-theme', 'light');
+            btn.innerHTML = '<i class="bi bi-moon-stars-fill"></i> داكن';
+        }
+    }
+
+    function toggleCompact() { 
+        document.body.classList.toggle('compact'); 
+        const btn = document.getElementById('compactBtn');
+        if(document.body.classList.contains('compact')) {
+            btn.innerHTML = '<i class="bi bi-arrows-expand"></i> عادي';
+        } else {
+            btn.innerHTML = '<i class="bi bi-arrows-collapse"></i> مضغوط';
+        }
+    }
+
     function getSaved() { return JSON.parse(localStorage.getItem('sid_db_v45') || '{}'); }
     function save(ref, status) { let s = getSaved(); s[ref] = status; localStorage.setItem('sid_db_v45', JSON.stringify(s)); }
 
@@ -171,10 +254,19 @@
                 if(target <= 0) return null;
                 const ref = String(v['Invoice Ref'] || idx);
                 const dist = distributeSmartFinal(target, ref);
+                
+                // تعديل: فحص حالة الاعتماد من ملف الإكسيل أولاً ثم من الذاكرة
+                let isDone = false;
+                if(v['Done'] !== undefined) {
+                    const doneVal = String(v['Done']).toUpperCase();
+                    isDone = (doneVal === 'TRUE' || doneVal === '1' || doneVal === 'YES');
+                }
+                if(saved[ref] !== undefined) isDone = saved[ref];
+
                 return {
                     idx, date: fmtDate(v['Invoice Date']), ref, target, vat: fix(v['VAT Amount'] || 0),
                     incl: fix(v['Total Incl VAT'] || 0), items: dist.list, disc: dist.disc, totalItems: dist.sum,
-                    done: saved[ref] || false
+                    done: isDone
                 };
             }).filter(i => i);
             render();
@@ -189,22 +281,17 @@
     function distributeSmartFinal(target, ref) {
         let seed = 0; for (let i = 0; i < ref.length; i++) seed += ref.charCodeAt(i);
         const getRnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-        
-        // تعديل: تحديد عدد أصناف عشوائي بحد أقصى 10
         let maxPossible = Math.min(10, items.length);
         let minPossible = Math.min(4, maxPossible);
         let count = Math.floor(getRnd() * (maxPossible - minPossible + 1)) + minPossible;
-        
         let availablePool = [...items];
         let selected = [];
-        
         for(let i=0; i<count; i++) {
             if(availablePool.length === 0) break;
             let rndIdx = Math.floor(getRnd() * availablePool.length);
             let item = availablePool.splice(rndIdx, 1)[0]; 
             selected.push({...item, q: 0, t: 0});
         }
-
         let currentSum = 0;
         selected.forEach(item => {
             item.q = Math.floor(((target / selected.length) * 0.85) / item.p); 
@@ -212,14 +299,11 @@
             item.t = fix(item.q * item.p); 
             currentSum = fix(currentSum + item.t);
         });
-
         let safety = 0;
         while (currentSum < target && safety < 1000) {
             let i = selected[Math.floor(getRnd() * selected.length)];
-            i.q++; 
-            i.t = fix(i.q * i.p); 
-            currentSum = fix(selected.reduce((s, x) => s + x.t, 0)); 
-            safety++;
+            i.q++; i.t = fix(i.q * i.p); 
+            currentSum = fix(selected.reduce((s, x) => s + x.t, 0)); safety++;
         }
         return { list: selected, sum: currentSum, disc: fix(currentSum - target) };
     }
@@ -234,7 +318,7 @@
                 <td class="col-money cell-right num-font text-danger">${fmt(v.disc)}</td>
                 <td class="col-money cell-right num-font fw-bold">${fmt(v.target)}</td>
                 <td class="col-money cell-right num-font">${fmt(v.vat)}</td>
-                <td class="col-money cell-right num-font text-primary">${fmt(v.incl)}</td>
+                <td class="col-money cell-right num-font text-primary fw-bold">${fmt(v.incl)}</td>
                 <td class="col-actions cell-center">
                     <div class="d-flex gap-1 justify-content-center">
                         <span class="action-btn btn-view" title="معاينة" onclick="show(${v.idx})"><i class="bi bi-eye"></i></span>
@@ -253,8 +337,11 @@
         let v = invoices[id]; window.currentId = id;
         const realTaxRate = v.target > 0 ? (v.vat / v.target) : 0;
         const displayRate = (realTaxRate * 100).toLocaleString('en-US', {maximumFractionDigits: 2}) + '%';
-
+        
+        document.getElementById('m_idx_title').innerText = v.idx + 1;
         document.getElementById('m_ref_title').innerText = v.ref;
+        document.getElementById('m_date_title').innerText = v.date;
+
         document.getElementById('m_status_bar').innerHTML = v.done ? 
             `<div class="status-alert status-completed"><i class="bi bi-check-circle-fill"></i> هذه الفاتورة معتمدة ومحفوظة بالسجل</div>` :
             `<div class="status-alert status-pending"><i class="bi bi-clock-history"></i> هذه الفاتورة قيد الانتظار - لم يتم اعتمادها بعد</div>`;
@@ -273,10 +360,9 @@
                 <td class="cell-right num-font fw-bold">${fmt(i.t)}</td>
                 <td class="cell-center num-font text-muted">${displayRate}</td>
                 <td class="cell-right num-font">${fmt(itemVat)}</td>
-                <td class="cell-right num-font text-primary">${fmt(itemIncl)}</td>
+                <td class="cell-right num-font text-primary fw-bold">${fmt(itemIncl)}</td>
             </tr>`;
         }).join('');
-
         document.getElementById('m_total_items').innerText = fmt(v.totalItems);
         document.getElementById('m_disc').innerText = fmt(v.disc);
         document.getElementById('m_excl').innerText = fmt(v.target);
@@ -289,17 +375,9 @@
         const v = invoices[id];
         const realTaxRate = v.target > 0 ? (v.vat / v.target) : 0;
         const data = v.items.map((i, n) => ({
-            'رقم المرجع': v.ref,
-            '#': n + 1,
-            'كود الصنف': i.c,
-            'وصف الصنف': i.d,
-            'الوحدة': i.u,
-            'الكمية': i.q,
-            'سعر الوحدة': i.p,
-            'الاجمالي قبل الضريبة': i.t,
-            'نسبة الضريبة': (realTaxRate * 100).toFixed(2) + '%',
-            'قيمة الضريبة': fix(i.t * realTaxRate),
-            'الاجمالي بعد الضريبة': fix(i.t + fix(i.t * realTaxRate))
+            'رقم المرجع': v.ref, '#': n + 1, 'كود الصنف': i.c, 'وصف الصنف': i.d, 'الوحدة': i.u, 'الكمية': i.q,
+            'سعر الوحدة': i.p, 'الاجمالي قبل الضريبة': i.t, 'نسبة الضريبة': (realTaxRate * 100).toFixed(2) + '%',
+            'قيمة الضريبة': fix(i.t * realTaxRate), 'الاجمالي بعد الضريبة': fix(i.t + fix(i.t * realTaxRate))
         }));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
@@ -313,18 +391,9 @@
             const realTaxRate = v.target > 0 ? (v.vat / v.target) : 0;
             v.items.forEach((i, n) => {
                 allData.push({
-                    'رقم المرجع': v.ref,
-                    'التاريخ': v.date,
-                    '#': n + 1,
-                    'كود الصنف': i.c,
-                    'وصف الصنف': i.d,
-                    'الوحدة': i.u,
-                    'الكمية': i.q,
-                    'سعر الوحدة': i.p,
-                    'الاجمالي قبل الضريبة': i.t,
-                    'نسبة الضريبة': (realTaxRate * 100).toFixed(2) + '%',
-                    'قيمة الضريبة': fix(i.t * realTaxRate),
-                    'الاجمالي بعد الضريبة': fix(i.t + fix(i.t * realTaxRate))
+                    'رقم المرجع': v.ref, 'التاريخ': v.date, '#': n + 1, 'كود الصنف': i.c, 'وصف الصنف': i.d, 'الوحدة': i.u,
+                    'الكمية': i.q, 'سعر الوحدة': i.p, 'الاجمالي قبل الضريبة': i.t, 'نسبة الضريبة': (realTaxRate * 100).toFixed(2) + '%',
+                    'قيمة الضريبة': fix(i.t * realTaxRate), 'الاجمالي بعد الضريبة': fix(i.t + fix(i.t * realTaxRate))
                 });
             });
         });
@@ -344,8 +413,7 @@
             '#': v.idx + 1, 'تاريخ الفاتورة': v.date, 'رقم المرجع': v.ref,
             'الإجمالي قبل الخصم': v.totalItems, 'قيمة الخصم': v.disc,
             'الإجمالي قبل الضريبة': v.target, 'قيمة الضريبة': v.vat,
-            'الإجمالي شامل الضريبة': v.incl, 
-            'حالة الفاتورة': v.done
+            'الإجمالي شامل الضريبة': v.incl, 'حالة الفاتورة': v.done
         }));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
